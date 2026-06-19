@@ -131,7 +131,7 @@ struct node {
     socklen_t sslen;
 };
     
-#define CIRCULAR_LIST_SIZE 256
+#define CIRCULAR_LIST_SIZE 4096
 
 struct circular_list {
     int head;
@@ -141,7 +141,7 @@ struct circular_list {
 
 struct circular_list v4_new, v6_new, v4_confirmed, v6_confirmed;
 
-#define MAX_TOKEN_BUCKET_TOKENS 40
+#define MAX_TOKEN_BUCKET_TOKENS 8000
 static time_t token_bucket_time;
 static int token_bucket_tokens;
 
@@ -326,7 +326,7 @@ token_bucket(void)
     time_t now = time(NULL);
     if(token_bucket_tokens == 0) {
         token_bucket_tokens = MIN(MAX_TOKEN_BUCKET_TOKENS,
-                                  4 * (now - token_bucket_time));
+                                  2000 * (now - token_bucket_time));
         token_bucket_time = now;
     }
 
@@ -913,7 +913,7 @@ buffer_random_nodes(int af, unsigned char *nodes)
     }
 
     n = 0;
-    while(n < 8) {
+    while(n < 16) {
         rc = list_random(list, id, &ss, &sslen);
         if(rc < 1)
             break;
@@ -946,8 +946,8 @@ send_random_nodes(struct sockaddr *sa, int salen,
                   const unsigned char *tid, int tid_len,
                   const unsigned char *id, int want)
 {
-    unsigned char nodes[8 * 26];
-    unsigned char nodes6[8 * 38];
+    unsigned char nodes[16 * 26];
+    unsigned char nodes6[16 * 38];
     int numnodes = 0, numnodes6 = 0;
 
     if(want < 0)
